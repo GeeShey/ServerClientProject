@@ -135,12 +135,14 @@ void ClientSetup()
 	char test[]  = "Test Message\0";
 	sendMessageFromClient(test);
 	std::cout << "> [Sent a test message]\n";
+
 	std::string username;
-	printf("Enter username\n");
+	printf("Enter username(Usernames cannot be separated by spaces)\n");
 	std::cin >> username;
 	std::string command = "$register ";
 	command.append(username);
 	sendMessageFromClient(&command[0]);
+
 	std::string USER_REGISTRATION_RESULT;
 	if (ClientRecieveMessage(USER_REGISTRATION_RESULT) == 1) {
 		if (USER_REGISTRATION_RESULT._Equal("1")) {
