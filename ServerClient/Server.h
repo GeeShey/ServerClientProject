@@ -5,19 +5,92 @@ int server_port = 31337;
 
 fd_set master,readySet;
 bool serverActive = true;
-
+int CHAT_CAPACITY = 2;
 SOCKET listenSocket;
 //SOCKET Server_ComSocket;
+struct user {
+
+	std::string name;
+	SOCKET* sock;
+};
+
+enum messages {
+	SV_FULL, SV_SUCCESS
+};
+
+std::vector<user> users;
+
+int ServerSendMessage(char* sendbuffer, SOCKET Socket) {
+	//Communication
+	uint8_t size = 255;
+	//memset(sendbuffer, 0, 255);
+
+	int result = tcp_send_whole(Socket, (char*)&size, 1);
+	if ((result == SOCKET_ERROR) || (result == 0))
+	{
+		int error = WSAGetLastError();
+		printf("DEBUG// send is incorrect\n");
+		return 0;
+
+	}
+	else
+	{
+		//printf("DEBUG// I used the send function\n");
+	}
 
 
 
-int ServerRecieveMessage(SOCKET Server_ComSocket) {
+	result = tcp_send_whole(Socket, sendbuffer, size);
+	if ((result == SOCKET_ERROR) || (result == 0))
+	{
+		int error = WSAGetLastError();
+		printf("DEBUG// send is incorrect\n");
+		return 0;
+
+	}
+	else
+	{
+		//printf("DEBUG// I used the send function\n");
+	}
+	return 1;
+}
+
+int executeCommand(char* msg,SOCKET* s) {
+	// 0 SV_FULL
+	// 1 SV_SUCCESS
+	if (msg[0] == '$') {
+		printf("processing the following command...\n");
+		printf(msg);
+		printf("\n");
+		if (users.size() >= CHAT_CAPACITY) {
+			printf("CHATROOM IS FULL, CANNOT ADD MORE USERS\n");
+			//SV_FULL
+			char invalid[] = "0";
+			ServerSendMessage(invalid, *s);
+			return 0;
+		}
+		else {
+			user newUser;
+			std::string tempString(msg);
+			newUser.name = tempString.substr(10, tempString.length() - 9);
+			newUser.sock = s;
+			users.push_back(newUser);
+			printf("added a new user: ");
+			printf(newUser.name.c_str());
+			printf("\n");
+
+			char valid[] = "1";
+			ServerSendMessage(valid, *s);
+			return 1;
+		}
+	}
+}
+int ServerRecieveMessage(SOCKET Socket) {
 	using namespace common;
 
 	//Communication
 	int size = 0;
-
-	int result = tcp_recv_whole(Server_ComSocket, (char*)&size, 1);
+	int result = tcp_recv_whole(Socket, (char*)&size, 1);
 	if ((result == SOCKET_ERROR) || (result == 0))
 	{
 		int error = WSAGetLastError();
@@ -27,13 +100,13 @@ int ServerRecieveMessage(SOCKET Server_ComSocket) {
 	}
 	else
 	{
-		printf("DEBUG// I used the recv function\n");
+		//printf("DEBUG// I used the recv function\n");
 		//return 1;
 	}
 
 	char* buffer = new char[size];
 
-	result = tcp_recv_whole(Server_ComSocket, (char*)buffer, size);
+	result = tcp_recv_whole(Socket, (char*)buffer, size);
 	if ((result == SOCKET_ERROR) || (result == 0))
 	{
 		int error = WSAGetLastError();
@@ -43,59 +116,35 @@ int ServerRecieveMessage(SOCKET Server_ComSocket) {
 	}
 	else
 	{
-		printf("DEBUG// I used the recv function\n");
+		//printf("DEBUG// I used the recv function\n");
+		if (buffer[0] == '$') {
+			executeCommand(buffer,&Socket);
+		}
+		if (buffer[0] == '\0') {
+			//recieved a blank message
+		}
+		else {
+			printf(">");
+			printf(buffer);
+			printf("\n");
+
+		}
 	}
-
-	printf("DEBUG// I received a message from the client\n");
-
-	printf("\n\n");
-	printf(buffer);
-	printf("\n\n");
+	//printf("\nDEBUG// I received a message from the client\n");
 
 	delete[] buffer;
 }
 
-int sendMessageFromServer(char* sendbuffer, SOCKET Server_ComSocket) {
-	//Communication
-	uint8_t size = 255;
-	//memset(sendbuffer, 0, 255);
 
-	int result = tcp_send_whole(Server_ComSocket, (char*)&size, 1);
-	if ((result == SOCKET_ERROR) || (result == 0))
-	{
-		int error = WSAGetLastError();
-		printf("DEBUG// send is incorrect\n");
-		return 0;
-
-	}
-	else
-	{
-		printf("DEBUG// I used the send function\n");
-	}
-
-
-
-	result = tcp_send_whole(Server_ComSocket, sendbuffer, size);
-	if ((result == SOCKET_ERROR) || (result == 0))
-	{
-		int error = WSAGetLastError();
-		printf("DEBUG// send is incorrect\n");
-		return 0;
-
-	}
-	else
-	{
-		printf("DEBUG// I used the send function\n");
-	}
-	return 1;
-}
 
 int Update() {
 
 	readySet = master;
-	int readyFD = select(NULL, &readySet, NULL, NULL, NULL);
+	timeval timeout{};
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	int readyFD = select(NULL, &readySet, NULL, NULL, &timeout);
 
-	//printf("DEBUG// I used the accept function\n");
 
 	for (int i = 0; i < readyFD; i++) {
 		if (readySet.fd_array[i] == listenSocket) {
@@ -152,7 +201,7 @@ int ServerSetup()
 	}
 	else
 	{
-		printf("DEBUG// I used the socket function\n");
+		//printf("DEBUG// I used the socket function\n");
 	}
 
 	//Bind
@@ -169,7 +218,7 @@ int ServerSetup()
 	}
 	else
 	{
-		printf("DEBUG// I used the bind function\n");
+		//printf("DEBUG// I used the bind function\n");
 	}
 
 	//Listen
@@ -181,18 +230,17 @@ int ServerSetup()
 	}
 	else
 	{
-		printf("DEBUG// I used the listen function\n");
+		//printf("DEBUG// I used the listen function\n");
 	}
 
 	FD_ZERO(&master);
 	FD_SET(listenSocket, &master);
 	
-
+	printf("Great Success | Waiting...\n\n");
 	while (serverActive) {
 		Update();
 	}
 
-	printf("Waiting...\n\n");
 
 
 	

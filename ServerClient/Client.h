@@ -5,7 +5,7 @@ int client_port = 31337;
 
 SOCKET Client_ComSocket;
 using namespace common;
-int ClientRecieveMessage() {
+int ClientRecieveMessage(std::string& out) {
 	//Communication
 	int size = 0;
 
@@ -19,8 +19,7 @@ int ClientRecieveMessage() {
 	}
 	else
 	{
-		printf("DEBUG// I used the recv function\n");
-		return 1;
+		//printf("DEBUG// I used the recv function\n");
 	}
 
 	char* buffer = new char[size];
@@ -35,16 +34,18 @@ int ClientRecieveMessage() {
 	}
 	else
 	{
-		printf("DEBUG// I used the recv function\n");
+		//printf("DEBUG// I used the recv function\n");
 	}
 
-	printf("DEBUG// I received a message from the client\n");
+	printf("\nDEBUG// I received a message from the server\n");
 
-	printf("\n\n");
+	printf(">");
 	printf(buffer);
-	printf("\n\n");
+	printf("\n");
 
+	out = std::string(buffer);
 	delete[] buffer;
+	return 1;
 }
 
 int sendMessageFromClient(char* sendbuffer) {
@@ -62,7 +63,7 @@ int sendMessageFromClient(char* sendbuffer) {
 	}
 	else
 	{
-		printf("DEBUG// I used the send function\n");
+		//printf("DEBUG// I used the send function\n");
 	}
 
 
@@ -77,7 +78,7 @@ int sendMessageFromClient(char* sendbuffer) {
 	}
 	else
 	{
-		printf("DEBUG// I used the send function\n");
+		//printf("DEBUG// I used the send function\n");
 	}
 	return 1;
 }
@@ -109,7 +110,7 @@ void ClientSetup()
 	}
 	else
 	{
-		printf("DEBUG// I used the socket function\n");
+		//printf("DEBUG// I used the socket function\n");
 	}
 
 	//Connect
@@ -127,19 +128,37 @@ void ClientSetup()
 	}
 	else
 	{
-		printf("DEBUG// I used the Connect function\n");
+		//printf("DEBUG// I used the Connect function\n");
 	}
 
 	//Communication
 	char test[]  = "Test Message\0";
 	sendMessageFromClient(test);
-	std::cout << "Sent a test message\n";
+	std::cout << "> [Sent a test message]\n";
+	std::string username;
+	printf("Enter username\n");
+	std::cin >> username;
+	std::string command = "$register ";
+	command.append(username);
+	sendMessageFromClient(&command[0]);
+	std::string USER_REGISTRATION_RESULT;
+	if (ClientRecieveMessage(USER_REGISTRATION_RESULT) == 1) {
+		if (USER_REGISTRATION_RESULT._Equal("1")) {
+			printf("user registration successfull\n");
+			printf("WELCOME TO THE CHATROOM\n");
 
+		}
+		else {
+			printf("user registration unsuccessfull, chat-room is full\n");
+
+		}
+	}
 	while (true) {
-		std::string s;
-		std::cin >> s;
-		sendMessageFromClient(&s[0]);
 		//ClientRecieveMessage();
+		std::string s;
+		std::getline(std::cin, s);
+		sendMessageFromClient(&s[0]);
+
 	}
 	// close sockets
 	clientShutdown();

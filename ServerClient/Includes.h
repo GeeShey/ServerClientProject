@@ -8,7 +8,8 @@
 //#include <ws2tcpip.h>                         // only need if you use inet_pton
 #pragma comment(lib,"Ws2_32.lib")
 #include <iostream>
-
+#include <string>
+#include<vector>
 // loop send func
 namespace common {
 
