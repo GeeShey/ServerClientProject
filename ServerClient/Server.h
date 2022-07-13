@@ -11,8 +11,9 @@ bool serverActive = true;
 int CHAT_CAPACITY = 2;
 SOCKET listenSocket;
 int readyFD = 0;
-std::ofstream ofs;
 std::string LOG_FILENAME = "log.txt";
+std::ofstream ofs;
+std::ifstream ifs(LOG_FILENAME);
 char invalid[] = "0";//SV_FAIl
 
 //SOCKET Server_ComSocket;
@@ -48,7 +49,16 @@ void Server_log(std::string s) {
 	ofs.close();
 }
 
-int ServerSendMessage(char* sendbuffer, SOCKET Socket,bool isServerMessage = true) {
+std::string getUsernameFromSocket(SOCKET socket) {
+	for (int i = 0; i < users.size(); i++) {
+		if ((users[i].sock) == socket) {
+			return users[i].name;
+		}
+	}
+	return "UNREGISTERED CLIENT";
+}
+
+int ServerSendMessage(char* sendbuffer, SOCKET Socket,bool isEcho = false) {
 	//Communication
 	uint8_t size = 255;
 	//memset(sendbuffer, 0, 255);
@@ -80,6 +90,16 @@ int ServerSendMessage(char* sendbuffer, SOCKET Socket,bool isServerMessage = tru
 	{
 		//printf("DEBUG// I used the send function\n");
 	}
+	std::string nama = getUsernameFromSocket(Socket);
+
+	Server_log("\n<------------------------->\n");
+	Server_log("Server -> ");
+	Server_log(nama.c_str());
+	Server_log("\n");
+	Server_log(sendbuffer);
+	Server_log("\n<------------------------->\n\n");
+
+
 	return 1;
 }
 int getListCommand(char* msg, SOCKET s) {
@@ -90,6 +110,26 @@ int getListCommand(char* msg, SOCKET s) {
 		message.append("\n");
 	} //todo come back here
 	ServerSendMessage(&message[0], s);
+	return 1;
+}
+
+int getLog(char* msg, SOCKET s) {
+
+	
+	std::string line;
+	if (ifs.is_open())
+	{
+		std::string temp = "";
+		while (std::getline(ifs, temp))
+		{
+			line.append(temp);
+			line.append("\n");
+
+		}
+		ifs.close();
+	}
+
+	ServerSendMessage(&line[0], s);
 	return 1;
 }
 int registerCommand(char* msg, SOCKET s) {
@@ -122,6 +162,33 @@ int registerCommand(char* msg, SOCKET s) {
 
 }
 
+int exitCommand(char* msg, SOCKET s) {
+
+	FD_CLR(s, &master);
+	int currIndex = 0;
+	for (int i = 0; i < users.size(); i++) {
+		if (users[i].sock == s)
+			currIndex = i;
+		break;
+	}
+
+	printf("Disconnected ");
+	printf(users[currIndex].name.c_str());
+	printf("\n");
+
+	Server_log("Server disconnected ");
+	Server_log(users[currIndex].name.c_str());
+	Server_log(" with GRACE\n");
+
+	users.erase(users.begin() + currIndex);
+
+
+	std::string message = "2";
+	ServerSendMessage(&message[0], s);
+
+	return 1;
+}
+
 int executeCommand(char* msg,SOCKET s) {
 	// 0 SV_FULL
 	// 1 SV_SUCCESS
@@ -131,18 +198,15 @@ int executeCommand(char* msg,SOCKET s) {
 		registerCommand(msg, s);
 	else if (message.find("getlist") != std::string::npos)
 		getListCommand(msg, s);
+	else if(message.find("exit") != std::string::npos)
+		exitCommand(msg, s);
+	else if (message.find("getlog") != std::string::npos)
+		exitCommand(msg, s);
 
 	return 1;
 }
 
-std::string getUsernameFromSocket(SOCKET socket) {
-	for (int i = 0; i < users.size(); i++) {
-		if ((users[i].sock) == socket) {
-			return users[i].name;
-		}
-	}
-	return "NEW CLIENT";
-}
+
 int ServerRecieveMessage(SOCKET Socket) {
 	using namespace common;
 
@@ -155,14 +219,18 @@ int ServerRecieveMessage(SOCKET Socket) {
 		if (error == WSAECONNRESET) {
 			FD_CLR(Socket, &master);
 			printf("DEBUG// removed socket due to reset by user\n");
-
+			//graceful disconnect
 			int currIndex = 0;
 			for (int i = 0; i < users.size(); i++) {
 				if (users[i].sock == Socket)
 					currIndex = i;
 				break;
 			}
+			Server_log("Server disconnected ");
+			Server_log(users[currIndex].name.c_str());
+			Server_log(" with GRACE\n");
 			users.erase(users.begin() + currIndex);
+
 
 			return 0;
 		}
@@ -178,7 +246,8 @@ int ServerRecieveMessage(SOCKET Socket) {
 
 	char* buffer = new char[size];
 
-	result = tcp_recv_whole(Socket, (char*)buffer, size);
+	result = tcp_recv_whole(Socket, buffer, size);
+
 	if ((result == SOCKET_ERROR) || (result == 0))
 	{
 		int error = WSAGetLastError();
@@ -206,37 +275,41 @@ int ServerRecieveMessage(SOCKET Socket) {
 	{
 		//printf("DEBUG// I used the recv function\n");
 		if (buffer[0] == '$') {
-			executeCommand(buffer,Socket);
-			Server_log("COMMAND: ");
+			std::string nama = getUsernameFromSocket(Socket);
+			Server_log(nama.c_str());
+			Server_log(": ");
 			Server_log(std::string(buffer));
 			Server_log("\n");
+			executeCommand(buffer,Socket);
 
 
 		}
 		else if (buffer[0] == '\0') {
 			//recieved a blank message
 		}
-		else {
-			if (users.size() != 0) {
+		else {//it is a public message
+			if (users.size() != 0) {//there is one user online
 				std::string nama = getUsernameFromSocket(Socket);
 				printf(nama.c_str());
 				printf(": ");
 				printf(buffer);
 				printf("\n");
 
+
 				nama.append(": ");
 				Server_log(nama);
 				Server_log(std::string(buffer));
 				Server_log("\n");
 
+				ServerSendMessage(buffer, Socket);
 			}
-			else {
-				printf("CLIENT");
+			else {//nobody is online(the client of the first user is sending this message)
+				printf("UNREGISTERED CLIENT");
 				printf(": ");
 				printf(buffer);
 				printf("\n");
 
-				Server_log("CLIENT: ");
+				Server_log("UNREGISTERED CLIENT: ");
 				Server_log(std::string(buffer));
 				Server_log("\n");
 
@@ -289,10 +362,6 @@ int Update() {
 			else {
 				//echo
 			}
-			/*char test[] = "Test Echo\0";
-			if (sendMessageFromServer(test) == 0) {
-				return 0;
-			}*/
 
 		}
 

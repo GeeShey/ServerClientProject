@@ -5,7 +5,7 @@ int client_port = 31337;
 bool CONNECTION_SUCCESFUL = false;
 SOCKET Client_ComSocket;
 using namespace common;
-int ClientRecieveMessage(std::string& out) {
+int ClientRecieveMessage(std::string& out, bool isEcho = false) {
 	//Communication
 	int size = 0;
 
@@ -37,11 +37,13 @@ int ClientRecieveMessage(std::string& out) {
 		//printf("DEBUG// I used the recv function\n");
 	}
 
-	printf("\nDEBUG// I received a message from the server\n");
+	if (!isEcho) {
+		printf("\nDEBUG// I received a message from the server\n");
 
-	printf(">");
-	printf(buffer);
-	printf("\n");
+		printf(">");
+		printf(buffer);
+		printf("\n");
+	}
 
 	out = std::string(buffer);
 	delete[] buffer;
@@ -180,13 +182,23 @@ void ClientSetup()
 			if (ClientRecieveMessage(COMMAND_RESULT) == 1) {
 				printf(COMMAND_RESULT.c_str());
 				printf("\n");
+				if (COMMAND_RESULT[0] == '2') {
+					//server said that you need to disconnect
+					CONNECTION_SUCCESFUL = false;
+					printf("CONNECTION TERMINATED!\n");
+				}
 			}
 			else {
 				printf("ERROR WITH COMMAND");
 			}
 		}
 		else {
-			sendMessageFromClient(&s[0]);
+			if (s[0] != ' ' && s[0] != '\0') {
+				sendMessageFromClient(&s[0]);
+				std::string RESULT;
+				ClientRecieveMessage(RESULT,true);//echo
+				//printf("/Debug ^this is the echo\n");
+			}
 		}
 
 	}

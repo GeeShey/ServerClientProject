@@ -1,7 +1,31 @@
 Connected to a new client
-CLIENT: Test Message
-COMMAND: $register sai
-Connected to a new client
-NEW CLIENT: Test Message
-COMMAND: $register gabe
-COMMAND: $getlist
+UNREGISTERED CLIENT: Test Message
+UNREGISTERED CLIENT: $register sai
+
+<------------------------->
+Server -> sai
+1
+<------------------------->
+
+sai: yayay
+
+<------------------------->
+Server -> sai
+yayay
+<------------------------->
+
+sai: yay
+
+<------------------------->
+Server -> sai
+yay
+<------------------------->
+
+sai: $exit
+Server disconnected sai with GRACE
+
+<------------------------->
+Server -> UNREGISTERED CLIENT
+2
+<------------------------->
+
