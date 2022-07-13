@@ -52,7 +52,7 @@ int sendMessageFromClient(char* sendbuffer) {
 	//Communication
 	uint8_t size = 255;
 	//memset(sendbuffer, 0, 255);
-
+	
 	int result = tcp_send_whole(Client_ComSocket, (char*)&size, 1);
 	if ((result == SOCKET_ERROR) || (result == 0))
 	{
@@ -169,7 +169,25 @@ void ClientSetup()
 		//ClientRecieveMessage();
 		std::string s;
 		std::getline(std::cin, s);
-		sendMessageFromClient(&s[0]);
+		bool isCommand = false;
+		if (s[0] == '$') {
+			isCommand = true;
+		}
+		if (isCommand) {
+			std::string COMMAND_RESULT;
+			sendMessageFromClient(&s[0]);
+			//wait for response
+			if (ClientRecieveMessage(COMMAND_RESULT) == 1) {
+				printf(COMMAND_RESULT.c_str());
+				printf("\n");
+			}
+			else {
+				printf("ERROR WITH COMMAND");
+			}
+		}
+		else {
+			sendMessageFromClient(&s[0]);
+		}
 
 	}
 	// close sockets

@@ -2,16 +2,19 @@
 #include "Includes.h"
 #include <fstream>
 #include <functional>
+#include <string>
 auto server_ip = INADDR_ANY;
 int server_port = 31337;
 
 fd_set master,readySet;
 bool serverActive = true;
-int CHAT_CAPACITY = 1;
+int CHAT_CAPACITY = 2;
 SOCKET listenSocket;
 int readyFD = 0;
 std::ofstream ofs;
 std::string LOG_FILENAME = "log.txt";
+char invalid[] = "0";//SV_FAIl
+
 //SOCKET Server_ComSocket;
 struct user {
 
@@ -79,38 +82,57 @@ int ServerSendMessage(char* sendbuffer, SOCKET Socket,bool isServerMessage = tru
 	}
 	return 1;
 }
+int getListCommand(char* msg, SOCKET s) {
+
+	std::string message = "";
+	for (int i = 0; i < users.size(); i++) {
+		message.append(users[i].name);
+		message.append("\n");
+	} //todo come back here
+	ServerSendMessage(&message[0], s);
+	return 1;
+}
+int registerCommand(char* msg, SOCKET s) {
+
+	printf("processing the following register command...\n");
+	printf(msg);
+	printf("\n");
+	if (users.size() >= CHAT_CAPACITY) {
+		printf("CHATROOM IS FULL, CANNOT ADD MORE USERS\n");
+		//SV_FULL
+		ServerSendMessage(invalid, s);
+		//closesocket(s);
+		FD_CLR(s, &master);
+		return 0;
+	}
+	else {
+		user newUser;
+		std::string tempString(msg);
+		newUser.name = tempString.substr(10, tempString.length() - 9);
+		newUser.sock = s;
+		users.push_back(newUser);
+		printf("added a new user: ");
+		printf(newUser.name.c_str());
+		printf("\n");
+
+		char valid[] = "1";
+		ServerSendMessage(valid, s);
+		return 1;
+	}
+
+}
 
 int executeCommand(char* msg,SOCKET s) {
 	// 0 SV_FULL
 	// 1 SV_SUCCESS
-	if (msg[0] == '$') {
-		printf("processing the following command...\n");
-		printf(msg);
-		printf("\n");
-		if (users.size() >= CHAT_CAPACITY) {
-			printf("CHATROOM IS FULL, CANNOT ADD MORE USERS\n");
-			//SV_FULL
-			char invalid[] = "0";
-			ServerSendMessage(invalid, s);
-			//closesocket(s);
-			FD_CLR(s, &master);
-			return 0;
-		}
-		else {
-			user newUser;
-			std::string tempString(msg);
-			newUser.name = tempString.substr(10, tempString.length() - 9);
-			newUser.sock = s;
-			users.push_back(newUser);
-			printf("added a new user: ");
-			printf(newUser.name.c_str());
-			printf("\n");
+	std::string message = std::string(msg);
 
-			char valid[] = "1";
-			ServerSendMessage(valid, s);
-			return 1;
-		}
-	}
+	if (message.find("register") != std::string::npos)
+		registerCommand(msg, s);
+	else if (message.find("getlist") != std::string::npos)
+		getListCommand(msg, s);
+
+	return 1;
 }
 
 std::string getUsernameFromSocket(SOCKET socket) {
@@ -343,11 +365,6 @@ int ServerSetup()
 	while (serverActive) {
 		Update();
 	}
-
-
-
-	
-
 
 	return 1;
 }
