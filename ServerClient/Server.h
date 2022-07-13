@@ -1,12 +1,13 @@
 #pragma once
 #include "Includes.h"
 #include <fstream>
+#include <functional>
 auto server_ip = INADDR_ANY;
 int server_port = 31337;
 
 fd_set master,readySet;
 bool serverActive = true;
-int CHAT_CAPACITY = 2;
+int CHAT_CAPACITY = 1;
 SOCKET listenSocket;
 int readyFD = 0;
 std::ofstream ofs;
@@ -16,7 +17,21 @@ struct user {
 
 	std::string name;
 	SOCKET sock;
+	bool operator==(user& that)
+	{
+		if (this == &that)
+		{
+			return true;
+		}
+		else {
+			if (this->name == that.name && this->sock == that.sock)
+				return true;
+			else
+				return false;
+		}
+	}
 };
+
 
 enum messages {
 	SV_FULL, SV_SUCCESS
@@ -77,6 +92,8 @@ int executeCommand(char* msg,SOCKET s) {
 			//SV_FULL
 			char invalid[] = "0";
 			ServerSendMessage(invalid, s);
+			//closesocket(s);
+			FD_CLR(s, &master);
 			return 0;
 		}
 		else {
@@ -113,6 +130,20 @@ int ServerRecieveMessage(SOCKET Socket) {
 	if ((result == SOCKET_ERROR) || (result == 0))
 	{
 		int error = WSAGetLastError();
+		if (error == WSAECONNRESET) {
+			FD_CLR(Socket, &master);
+			printf("DEBUG// removed socket due to reset by user\n");
+
+			int currIndex = 0;
+			for (int i = 0; i < users.size(); i++) {
+				if (users[i].sock == Socket)
+					currIndex = i;
+				break;
+			}
+			users.erase(users.begin() + currIndex);
+
+			return 0;
+		}
 		printf("DEBUG// recv is incorrect\n");
 		return 0;
 
@@ -129,6 +160,22 @@ int ServerRecieveMessage(SOCKET Socket) {
 	if ((result == SOCKET_ERROR) || (result == 0))
 	{
 		int error = WSAGetLastError();
+		if (error == WSAECONNRESET) {
+			FD_CLR(Socket, &master);
+
+			printf("DEBUG// removed socket due to reset by user\n");
+
+			int currIndex = 0;
+			for (int i = 0; i < users.size(); i++) {
+				if (users[i].sock == Socket)
+					currIndex = i;
+				break;
+			}
+			users.erase(users.begin() + currIndex);
+
+			return 0;
+
+		}
 		printf("DEBUG// recv is incorrect\n");
 		return 0;
 
@@ -197,11 +244,13 @@ int Update() {
 			if (FD_ISSET(listenSocket, &readySet)) {
 				SOCKET Server_ComSocket = accept(listenSocket, NULL, NULL);
 				if (Server_ComSocket != INVALID_SOCKET) {
+					
 					FD_SET(Server_ComSocket, &master);
 					Server_log("Connected to a new client");
 					Server_log("\n");
 
 					printf("Connected to a client\n");
+					
 
 				}
 				else {

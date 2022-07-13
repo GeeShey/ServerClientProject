@@ -2,7 +2,7 @@
 #include "Includes.h"
 auto client_ip = INADDR_ANY;
 int client_port = 31337;
-
+bool CONNECTION_SUCCESFUL = false;
 SOCKET Client_ComSocket;
 using namespace common;
 int ClientRecieveMessage(std::string& out) {
@@ -57,6 +57,15 @@ int sendMessageFromClient(char* sendbuffer) {
 	if ((result == SOCKET_ERROR) || (result == 0))
 	{
 		int error = WSAGetLastError();
+		if (error == WSAECONNRESET) {
+
+			printf("DEBUG// server disconnected due to reset by user\n");
+
+			CONNECTION_SUCCESFUL = false;
+
+			return 0;
+
+		}
 		printf("DEBUG// send is incorrect\n");
 		return 0;
 
@@ -148,14 +157,15 @@ void ClientSetup()
 		if (USER_REGISTRATION_RESULT._Equal("1")) {
 			printf("user registration successfull\n");
 			printf("WELCOME TO THE CHATROOM\n");
-
+			CONNECTION_SUCCESFUL = true;
 		}
 		else {
 			printf("user registration unsuccessfull, chat-room is full\n");
+			CONNECTION_SUCCESFUL = false;
 
 		}
 	}
-	while (true) {
+	while (CONNECTION_SUCCESFUL) {
 		//ClientRecieveMessage();
 		std::string s;
 		std::getline(std::cin, s);
