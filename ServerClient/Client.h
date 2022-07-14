@@ -4,8 +4,11 @@ auto client_ip = INADDR_ANY;
 int client_port = 31337;
 bool CONNECTION_SUCCESFUL = false;
 SOCKET Client_ComSocket;
+std::string CLIENT_LOG_FILENAME = "client_log.txt";
+std::ofstream cofs;
+
 using namespace common;
-int ClientRecieveMessage(std::string& out, bool displayDataToUser = false) {
+int ClientRecieveMessage(std::string& out, bool displayDataToUser = true) {
 	//Communication
 	int size = 0;
 
@@ -40,7 +43,7 @@ int ClientRecieveMessage(std::string& out, bool displayDataToUser = false) {
 	if (displayDataToUser) {
 		//printf("\nDEBUG// I received a message from the server\n");
 
-		//printf(">");
+		printf("Server: ");
 		printf(buffer);
 		printf("\n");
 	}
@@ -119,8 +122,16 @@ int clientShutdown() {
 	return 1;
 }
 
+void Client_log(std::string s) {
+	cofs.open(CLIENT_LOG_FILENAME, std::ios_base::app);
+	cofs << s;
+	cofs.close();
+}
+
 void ClientSetup()
 {
+
+
 	std::string choice;
 	printf("Enter IP address\n");
 	std::cin >> choice;
@@ -169,15 +180,15 @@ void ClientSetup()
 
 	ClientRecieveMessage(TestRecieve);
 	if (TestRecieve._Equal("Test Message"))
-		printf("Succesfully connected to server\n");
+		printf("Server echo successful\n");
 	else
 		printf("There is a transmisiion error(echo from the server was incorrect\n");
 	std::string username;
-	printf("Enter username(Usernames cannot be separated by spaces)\n");
+	printf("Enter username(Usernames cannot be separated by spaces) or type $exit to exit\n");
 	std::cin >> username;
 	std::string COMMAND_RESULT;
 
-	if (username.find("exit") != std::string::npos) {
+	if (username.find("$exit") != std::string::npos) {
 		sendMessageFromClient(&username[0]);
 		if (ClientRecieveMessage(COMMAND_RESULT) == 1) {
 			printf(COMMAND_RESULT.c_str());
@@ -196,8 +207,8 @@ void ClientSetup()
 		std::string USER_REGISTRATION_RESULT;
 		if (ClientRecieveMessage(USER_REGISTRATION_RESULT) == 1) {
 			if (USER_REGISTRATION_RESULT._Equal(SV_SUCCESS)) {
-				printf("user registration successfull\n");
-				printf("WELCOME TO THE CHATROOM\n");
+				//printf("user registration successfull\n");
+				printf("----------------WELCOME TO THE CHATROOM----------------\n");
 				CONNECTION_SUCCESFUL = true;
 			}
 			else if (USER_REGISTRATION_RESULT._Equal(SV_FULL)) {
@@ -218,7 +229,28 @@ void ClientSetup()
 		}
 		if (isCommand) {
 			sendMessageFromClient(&s[0]);
-			if (s.find("getlog") != std::string::npos || s.find("getlist") != std::string::npos) {
+			if (s.find("getlog") != std::string::npos) {
+				if (ClientRecieveBigMessage(COMMAND_RESULT) == 1) {
+					printf(COMMAND_RESULT.c_str());
+					printf("\n");
+					printf("Created a file called ");
+
+
+					cofs.open(CLIENT_LOG_FILENAME, std::ofstream::out | std::ofstream::trunc);
+					cofs.close();//clearing the file
+					Client_log(COMMAND_RESULT);
+
+					printf(CLIENT_LOG_FILENAME.c_str());
+					printf("\n");
+
+
+
+				}
+				else {
+					printf("ERROR WITH COMMAND");
+				}
+			}
+			else if (s.find("getlist") != std::string::npos) {
 				if (ClientRecieveBigMessage(COMMAND_RESULT) == 1) {
 					printf(COMMAND_RESULT.c_str());
 					printf("\n");
@@ -253,7 +285,7 @@ void ClientSetup()
 			if (s[0] != ' ' && s[0] != '\0') {
 				sendMessageFromClient(&s[0]);
 				std::string RESULT;
-				ClientRecieveMessage(RESULT,false);//echo
+				ClientRecieveMessage(RESULT);//echo
 				//printf("/Debug ^this is the echo\n");
 			}
 		}

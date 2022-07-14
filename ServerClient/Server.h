@@ -1,6 +1,5 @@
 #pragma once
 #include "Includes.h"
-#include <fstream>
 #include <functional>
 #include <string>
 auto server_ip = INADDR_ANY;
@@ -206,33 +205,49 @@ int registerCommand(char* msg, SOCKET s) {
 
 }
 
-int exitCommand(char* msg, SOCKET s) {
-
+int exitWithoutRegister(SOCKET s) {
 	FD_CLR(s, &master);
-	int currIndex = 0;
-
-	for (int i = 0; i < users.size(); i++) {
-		if (users[i].sock == s) {
-			currIndex = i;
-			break;
-		}
-	}
-
-	printf("User ");
-	printf(users[currIndex].name.c_str());
-	printf(" disconnected [It was nice while it lasted :( ]\n");
-
-	Server_log("Server disconnected ");
-	Server_log(users[currIndex].name.c_str());
-	Server_log(" with GRACE\n");
-
-	users.erase(users.begin() + currIndex);
-
-
 	std::string message = "2";
 	ServerSendMessage(&message[0], s);
 
 	return 1;
+}
+
+int exitCommand(char* msg, SOCKET s) {
+
+	FD_CLR(s, &master);
+	int currIndex = 0;
+	if (socketExists(s)) {
+		if (users.size() != 0) {
+			for (int i = 0; i < users.size(); i++) {
+				if (users[i].sock == s) {
+					currIndex = i;
+					break;
+				}
+			}
+
+			printf("User ");
+			printf(users[currIndex].name.c_str());
+			printf(" disconnected [It was nice while it lasted :( ]\n");
+
+			Server_log("Server disconnected ");
+			Server_log(users[currIndex].name.c_str());
+			Server_log(" with GRACE\n");
+
+			users.erase(users.begin() + currIndex);
+
+
+		}
+		std::string message = "2";
+		ServerSendMessage(&message[0], s);
+		return 1;
+	}
+	else {
+		//printf("User disconnected without registering");
+		return exitWithoutRegister(s);
+	}
+	
+
 }
 
 int executeCommand(char* msg,SOCKET s) {
