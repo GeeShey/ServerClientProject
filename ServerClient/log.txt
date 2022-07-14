@@ -5,13 +5,4 @@ UNREGISTERED CLIENT: $register sai
 Server -> sai: 1
 sai: shekhar
 Server -> sai: ECHO
-sai: $getlist
-Connected to a new client
-UNREGISTERED CLIENT: Test Message
-Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $register gabe
-Server -> gabe: 1
-gabe: $getlist
-Server disconnected gabe with GRACE
-sai: $getlist
 Server disconnected sai with GRACE

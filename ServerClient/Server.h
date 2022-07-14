@@ -36,11 +36,6 @@ struct user {
 	}
 };
 
-
-enum messages {
-	SV_FULL, SV_SUCCESS
-};
-
 std::vector<user> users;
 
 void Server_log(std::string s) {
@@ -188,8 +183,7 @@ int registerCommand(char* msg, SOCKET s) {
 		printf(newUser.name.c_str());
 		printf("\n");
 
-		char valid[] = "1";
-		ServerSendMessage(valid, s);
+		ServerSendMessage((char *)SV_SUCCESS, s);
 		return 1;
 	}
 
@@ -426,7 +420,6 @@ int ServerSetup()
 	//clearing the file
 	ofs.open(LOG_FILENAME, std::ofstream::out | std::ofstream::trunc);
 	ofs.close();
-
 	//std::string choice;
 	//printf("Enter IP address\n");
 	//std::cin >> choice;

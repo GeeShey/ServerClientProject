@@ -181,12 +181,12 @@ void ClientSetup()
 
 	std::string USER_REGISTRATION_RESULT;
 	if (ClientRecieveMessage(USER_REGISTRATION_RESULT) == 1) {
-		if (USER_REGISTRATION_RESULT._Equal("1")) {
+		if (USER_REGISTRATION_RESULT._Equal(SV_SUCCESS)) {
 			printf("user registration successfull\n");
 			printf("WELCOME TO THE CHATROOM\n");
 			CONNECTION_SUCCESFUL = true;
 		}
-		else {
+		else if (USER_REGISTRATION_RESULT._Equal(SV_FULL)) {
 			printf("user registration unsuccessfull, chat-room is full\n");
 			CONNECTION_SUCCESFUL = false;
 
