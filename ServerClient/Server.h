@@ -192,7 +192,7 @@ int registerCommand(char* msg, SOCKET s) {
 			user newUser;
 			std::string tempString(msg);
 			newUser.name = tempString.substr(10, tempString.length() - 9);
-			newUser.sock = s;
+			newUser.sock = s; 
 			users.push_back(newUser);
 			printf("added a new user: ");
 			printf(newUser.name.c_str());

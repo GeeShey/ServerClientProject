@@ -1,36 +1,7 @@
 Connected to a new client
 UNREGISTERED CLIENT: Test Message
 Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $exit
-Server -> UNREGISTERED CLIENT: 2
-Connected to a new client
-UNREGISTERED CLIENT: Test Message
-Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $register shekhar
-Server -> shekhar: 1
-Connected to a new client
-UNREGISTERED CLIENT: Test Message
-Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $register vedant
-Server -> vedant: 1
-vedant: hey
-Server -> vedant: ECHO
-shekhar: yo
-Server -> shekhar: ECHO
-Server disconnected vedant with GRACE
-Connected to a new client
-UNREGISTERED CLIENT: Test Message
-Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $exit
-Server -> UNREGISTERED CLIENT: 2
-Connected to a new client
-UNREGISTERED CLIENT: Test Message
-Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $register vedantsback
-Server -> vedantsback: 1
-vedantsback: $exit
-Server disconnected vedantsback with GRACE
-Server -> UNREGISTERED CLIENT: 2
-shekhar: $exit$exit
-Server disconnected shekhar with GRACE
-Server -> UNREGISTERED CLIENT: 2
+UNREGISTERED CLIENT: $register keniDaGoat
+Server -> keniDaGoat: 1
+keniDaGoat: asfad
+Server -> keniDaGoat: ECHO
