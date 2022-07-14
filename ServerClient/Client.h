@@ -55,41 +55,20 @@ int ClientRecieveBigMessage(std::string& out, bool displayDataToUser = false) {
 	uint8_t size = 0;
 	uint8_t iters = 0;
 
-	int result = tcp_recv_whole(Client_ComSocket, (char*)&iters, 1);
+	std::string length;
+	recv(Client_ComSocket, &length[0], 255, 0);
+	printf("recieved length ");
+	printf(length.c_str());
+	printf("\n");
+	int length_int = stoi(length);
 
-	for (int i = 0; i < (int)iters; i++) {
+	char* buffer = new char[length_int];
 
-		int result = tcp_recv_whole(Client_ComSocket, (char*)&size, 1);
-		if ((result == SOCKET_ERROR) || (result == 0))
-		{
-			int error = WSAGetLastError();
-			printf("DEBUG// recv is incorrect\n");
-			return 0;
-
-		}
-		else
-		{
-			//printf("DEBUG// I used the recv function\n");
-		}
-
-		char* buffer = new char[size];
-
-		result = tcp_recv_whole(Client_ComSocket, (char*)buffer, size);
-		if ((result == SOCKET_ERROR) || (result == 0))
-		{
-			int error = WSAGetLastError();
-			printf("DEBUG// recv is incorrect\n");
-			return 0;
-
-		}
-		else
-		{
-			//printf("DEBUG// I used the recv function\n");
-		}
-
-		out.append( std::string(buffer));
-		delete[] buffer;
+	for (int i = 0; i < length_int; i++) {
+		recv(Client_ComSocket, &buffer[i], 1, 0);//sending the size of the buffer
 	}
+	out.append(std::string(buffer));
+
 	return 1;
 }
 

@@ -60,59 +60,19 @@ std::string getUsernameFromSocket(SOCKET socket) {
 
 int ServerSendBigMessage(std::string msg, SOCKET Socket, bool isEcho = false) {
 
-	int padding = msg.length() / 255;
-	padding++;
-	padding = padding * 255 - msg.length();//finds out the close multiple to 255
+	msg.append("\0");
+	std::string length = std::to_string(msg.length());
+	send(Socket, &length[0], length.size(), 0);//sending the size of the buffer
+	printf("sent length ");
+	printf(length.c_str());
+	printf("\n");
 
-	uint8_t iters = msg.length() / 255;
-	iters++;
-
-	int result = tcp_send_whole(Socket, (char*)&iters, 1);
-	if ((result == SOCKET_ERROR) || (result == 0))
-	{
-		int error = WSAGetLastError();
-		printf("DEBUG// send is incorrect\n");
-		return 0;
-
+	for (int i = 0; i < msg.size(); i++) {
+		send(Socket, &msg[i], 1, 0);//sending the size of the buffer
 	}
 
-	for (int i = 0; i < padding; i++) {
-		msg.append("Z");
-	}
+	return 1;
 
-	for (int i = 0; i < (msg.length() / 255)+1; i++) {
-	
-		char* sendbuffer = &msg[255 * i - i];
-		uint8_t size = 255;
-
-		int result = tcp_send_whole(Socket, (char*)&size, 1);
-		if ((result == SOCKET_ERROR) || (result == 0))
-		{
-			int error = WSAGetLastError();
-			printf("DEBUG// send is incorrect\n");
-			return 0;
-
-		}
-		else
-		{
-			//printf("DEBUG// I used the send function\n");
-		}
-
-
-
-		result = tcp_send_whole(Socket, sendbuffer, size);
-		if ((result == SOCKET_ERROR) || (result == 0))
-		{
-			int error = WSAGetLastError();
-			printf("DEBUG// send is incorrect\n");
-			return 0;
-
-		}
-		else
-		{
-			//printf("DEBUG// I used the send function\n");
-		}
-	}
 
 }
 

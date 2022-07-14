@@ -3,14 +3,21 @@ UNREGISTERED CLIENT: Test Message
 Server -> UNREGISTERED CLIENT: ECHO
 UNREGISTERED CLIENT: $register sai
 Server -> sai: 1
-sai: hjfsdjksfd
+sai: shekhar
 Server -> sai: ECHO
-sai: adsjdsfjhlk
+sai: is 
 Server -> sai: ECHO
-sai: a
-Server -> sai: ECHO
-sai: asdf
-Server -> sai: ECHO
-sai: asdfg
+sai: dumb af
 Server -> sai: ECHO
 sai: $getlog
+sai: holy fuck
+Server -> sai: ECHO
+sai: that took way too long
+Server -> sai: ECHO
+sai: $getlog
+sai: heh
+Server -> sai: ECHO
+sai: wut
+Server -> sai: ECHO
+sai: $getlog
+Server disconnected sai with GRACE
