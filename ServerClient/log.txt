@@ -1,31 +1,16 @@
 Connected to a new client
 UNREGISTERED CLIENT: Test Message
+Server -> UNREGISTERED CLIENT: ECHO
 UNREGISTERED CLIENT: $register sai
-
-<------------------------->
-Server -> sai
-1
-<------------------------->
-
-sai: yayay
-
-<------------------------->
-Server -> sai
-yayay
-<------------------------->
-
-sai: yay
-
-<------------------------->
-Server -> sai
-yay
-<------------------------->
-
-sai: $exit
-Server disconnected sai with GRACE
-
-<------------------------->
-Server -> UNREGISTERED CLIENT
-2
-<------------------------->
-
+Server -> sai: 1
+sai: hjfsdjksfd
+Server -> sai: ECHO
+sai: adsjdsfjhlk
+Server -> sai: ECHO
+sai: a
+Server -> sai: ECHO
+sai: asdf
+Server -> sai: ECHO
+sai: asdfg
+Server -> sai: ECHO
+sai: $getlog

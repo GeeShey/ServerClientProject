@@ -5,7 +5,7 @@ int client_port = 31337;
 bool CONNECTION_SUCCESFUL = false;
 SOCKET Client_ComSocket;
 using namespace common;
-int ClientRecieveMessage(std::string& out, bool isEcho = false) {
+int ClientRecieveMessage(std::string& out, bool displayDataToUser = false) {
 	//Communication
 	int size = 0;
 
@@ -37,16 +37,59 @@ int ClientRecieveMessage(std::string& out, bool isEcho = false) {
 		//printf("DEBUG// I used the recv function\n");
 	}
 
-	if (!isEcho) {
-		printf("\nDEBUG// I received a message from the server\n");
+	if (displayDataToUser) {
+		//printf("\nDEBUG// I received a message from the server\n");
 
-		printf(">");
+		//printf(">");
 		printf(buffer);
 		printf("\n");
 	}
 
 	out = std::string(buffer);
 	delete[] buffer;
+	return 1;
+}
+
+int ClientRecieveBigMessage(std::string& out, bool displayDataToUser = false) {
+	//Communication
+	uint8_t size = 0;
+	uint8_t iters = 0;
+
+	int result = tcp_recv_whole(Client_ComSocket, (char*)&iters, 1);
+
+	for (int i = 0; i < (int)iters; i++) {
+
+		int result = tcp_recv_whole(Client_ComSocket, (char*)&size, 1);
+		if ((result == SOCKET_ERROR) || (result == 0))
+		{
+			int error = WSAGetLastError();
+			printf("DEBUG// recv is incorrect\n");
+			return 0;
+
+		}
+		else
+		{
+			//printf("DEBUG// I used the recv function\n");
+		}
+
+		char* buffer = new char[size];
+
+		result = tcp_recv_whole(Client_ComSocket, (char*)buffer, size);
+		if ((result == SOCKET_ERROR) || (result == 0))
+		{
+			int error = WSAGetLastError();
+			printf("DEBUG// recv is incorrect\n");
+			return 0;
+
+		}
+		else
+		{
+			//printf("DEBUG// I used the recv function\n");
+		}
+
+		out.append( std::string(buffer));
+		delete[] buffer;
+	}
 	return 1;
 }
 
@@ -145,8 +188,14 @@ void ClientSetup()
 	//Communication
 	char test[]  = "Test Message\0";
 	sendMessageFromClient(test);
-	std::cout << "> [Sent a test message]\n";
+	std::cout << "[Sent a test message]\n";
+	std::string TestRecieve;
 
+	ClientRecieveMessage(TestRecieve);
+	if (TestRecieve._Equal("Test Message"))
+		printf("Succesfully connected to server\n");
+	else
+		printf("There is a transmisiion error(echo from the server was incorrect\n");
 	std::string username;
 	printf("Enter username(Usernames cannot be separated by spaces)\n");
 	std::cin >> username;
@@ -178,14 +227,26 @@ void ClientSetup()
 		if (isCommand) {
 			std::string COMMAND_RESULT;
 			sendMessageFromClient(&s[0]);
+			if (s.find("getlog") != std::string::npos) {
+				if (ClientRecieveBigMessage(COMMAND_RESULT) == 1) {
+					printf(COMMAND_RESULT.c_str());
+					printf("\n");
+				}
+				else {
+					printf("ERROR WITH COMMAND");
+				}
+			}
 			//wait for response
-			if (ClientRecieveMessage(COMMAND_RESULT) == 1) {
-				printf(COMMAND_RESULT.c_str());
-				printf("\n");
-				if (COMMAND_RESULT[0] == '2') {
-					//server said that you need to disconnect
-					CONNECTION_SUCCESFUL = false;
-					printf("CONNECTION TERMINATED!\n");
+			//comeback to this pls
+			else if (s.find("exit") != std::string::npos) {
+				if (ClientRecieveMessage(COMMAND_RESULT) == 1) {
+					printf(COMMAND_RESULT.c_str());
+					printf("\n");
+					if (COMMAND_RESULT[0] == '2') {
+						//server said that you need to disconnect
+						CONNECTION_SUCCESFUL = false;
+						printf("CONNECTION TERMINATED!\n");
+					}
 				}
 			}
 			else {
@@ -196,7 +257,7 @@ void ClientSetup()
 			if (s[0] != ' ' && s[0] != '\0') {
 				sendMessageFromClient(&s[0]);
 				std::string RESULT;
-				ClientRecieveMessage(RESULT,true);//echo
+				ClientRecieveMessage(RESULT,false);//echo
 				//printf("/Debug ^this is the echo\n");
 			}
 		}
