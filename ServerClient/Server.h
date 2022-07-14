@@ -13,7 +13,7 @@ SOCKET listenSocket;
 int readyFD = 0;
 std::string LOG_FILENAME = "log.txt";
 std::ofstream ofs;
-std::ifstream ifs(LOG_FILENAME);
+
 char invalid[] = "0";//SV_FAIl
 
 //SOCKET Server_ComSocket;
@@ -60,17 +60,17 @@ std::string getUsernameFromSocket(SOCKET socket) {
 
 int ServerSendBigMessage(std::string msg, SOCKET Socket, bool isEcho = false) {
 
-	msg.append("\0");
+	//msg.append("\0");
 
-	std::string length = std::to_string(msg.length());
+	std::string length = std::to_string(msg.length()+1);
 
 	send(Socket, &length[0], length.size(), 0);//sending the size of the buffer
 
-	printf("sent length ");		//DEBUG STUFF
-	printf(length.c_str());		//DEBUG STUFF
-	printf("\n");				//DEBUG STUFF
+	//printf("sent length ");		//DEBUG STUFF
+	//printf(length.c_str());		//DEBUG STUFF
+	//printf("\n");				//DEBUG STUFF
 
-	for (int i = 0; i < msg.size(); i++) {
+	for (int i = 0; i < msg.size()+1; i++) {
 		send(Socket, &msg[i], 1, 0);//sending the size of the buffer
 	}
 
@@ -134,18 +134,20 @@ int ServerSendMessage(char* sendbuffer, SOCKET Socket, bool isEcho = false) {
 }
 int getListCommand(char* msg, SOCKET s) {
 
-	std::string message = "";
+	std::string message = "-------printing online members-------\n";
 	for (int i = 0; i < users.size(); i++) {
 		message.append(users[i].name);
 		message.append("\n");
 	} //todo come back here
+	message.append( "-------------------------------\n");
+
 	ServerSendMessage(&message[0], s);
 	return 1;
 }
 
 int getLogCommand(char* msg, SOCKET s) {
 
-	
+	std::ifstream ifs(LOG_FILENAME);
 	std::string line = "-------printing server logs-------\n";
 	if (ifs.is_open())
 	{
@@ -157,8 +159,9 @@ int getLogCommand(char* msg, SOCKET s) {
 
 		}
 		ifs.close();
+		ifs.clear();
 	}
-
+	line.append("-------------------------------\n");
 	ServerSendBigMessage(line, s);
 	return 1;
 }

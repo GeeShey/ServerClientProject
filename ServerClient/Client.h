@@ -55,9 +55,9 @@ int ClientRecieveBigMessage(std::string& out, bool displayDataToUser = false) {
 
 	std::string length;
 	recv(Client_ComSocket, &length[0], 255, 0);
-	printf("recieved length ");
-	printf(length.c_str());
-	printf("\n");
+	//printf("recieved length ");
+	//printf(length.c_str());
+	//printf("\n");
 	int length_int = stoi(length);//CONVERTS STRING TO INT
 
 	char* buffer = new char[length_int];
@@ -66,6 +66,7 @@ int ClientRecieveBigMessage(std::string& out, bool displayDataToUser = false) {
 		recv(Client_ComSocket, &buffer[i], 1, 0);//sending the size of the buffer
 	}
 	out.append(std::string(buffer));
+	delete[] buffer;
 
 	return 1;
 }
@@ -96,8 +97,6 @@ int sendMessageFromClient(char* sendbuffer) {
 	{
 		//printf("DEBUG// I used the send function\n");
 	}
-
-
 
 	result = tcp_send_whole(Client_ComSocket, sendbuffer, size);
 	if ((result == SOCKET_ERROR) || (result == 0))
