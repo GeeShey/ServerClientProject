@@ -6,6 +6,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS         // turns of deprecated warnings for winsock
 constexpr auto SV_FULL = "2";
 constexpr auto SV_SUCCESS = "1";
+constexpr auto SV_ALREADYREGISTERED = "3";
+
 
 #include <winsock2.h>
 //#include <ws2tcpip.h>                         // only need if you use inet_pton

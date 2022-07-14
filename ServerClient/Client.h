@@ -175,23 +175,39 @@ void ClientSetup()
 	std::string username;
 	printf("Enter username(Usernames cannot be separated by spaces)\n");
 	std::cin >> username;
-	std::string command = "$register ";
-	command.append(username);
-	sendMessageFromClient(&command[0]);
+	std::string COMMAND_RESULT;
 
-	std::string USER_REGISTRATION_RESULT;
-	if (ClientRecieveMessage(USER_REGISTRATION_RESULT) == 1) {
-		if (USER_REGISTRATION_RESULT._Equal(SV_SUCCESS)) {
-			printf("user registration successfull\n");
-			printf("WELCOME TO THE CHATROOM\n");
-			CONNECTION_SUCCESFUL = true;
-		}
-		else if (USER_REGISTRATION_RESULT._Equal(SV_FULL)) {
-			printf("user registration unsuccessfull, chat-room is full\n");
-			CONNECTION_SUCCESFUL = false;
-
+	if (username.find("exit") != std::string::npos) {
+		sendMessageFromClient(&username[0]);
+		if (ClientRecieveMessage(COMMAND_RESULT) == 1) {
+			printf(COMMAND_RESULT.c_str());
+			printf("\n");
+			if (COMMAND_RESULT[0] == '2') {
+				//server said that you need to disconnect
+				CONNECTION_SUCCESFUL = false;
+				printf("CONNECTION TERMINATED!\n");
+			}
 		}
 	}
+	else {
+		std::string command = "$register ";
+		command.append(username);
+		sendMessageFromClient(&command[0]);
+		std::string USER_REGISTRATION_RESULT;
+		if (ClientRecieveMessage(USER_REGISTRATION_RESULT) == 1) {
+			if (USER_REGISTRATION_RESULT._Equal(SV_SUCCESS)) {
+				printf("user registration successfull\n");
+				printf("WELCOME TO THE CHATROOM\n");
+				CONNECTION_SUCCESFUL = true;
+			}
+			else if (USER_REGISTRATION_RESULT._Equal(SV_FULL)) {
+				printf("user registration unsuccessfull, chat-room is full\n");
+				CONNECTION_SUCCESFUL = false;
+
+			}
+		}
+	}
+
 	while (CONNECTION_SUCCESFUL) {
 		//ClientRecieveMessage();
 		std::string s;
@@ -201,7 +217,6 @@ void ClientSetup()
 			isCommand = true;
 		}
 		if (isCommand) {
-			std::string COMMAND_RESULT;
 			sendMessageFromClient(&s[0]);
 			if (s.find("getlog") != std::string::npos || s.find("getlist") != std::string::npos) {
 				if (ClientRecieveBigMessage(COMMAND_RESULT) == 1) {
@@ -223,6 +238,11 @@ void ClientSetup()
 						CONNECTION_SUCCESFUL = false;
 						printf("CONNECTION TERMINATED!\n");
 					}
+				}
+			}
+			else if (s.find("register") != std::string::npos) {
+				if (ClientRecieveMessage(COMMAND_RESULT) == 1) {
+					printf("ALREADY REGISTERED!\n");
 				}
 			}
 			else {

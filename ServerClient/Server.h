@@ -73,6 +73,15 @@ int ServerSendBigMessage(std::string msg, SOCKET Socket, bool isEcho = false) {
 
 
 }
+bool socketExists(SOCKET socket) {
+
+	for (int i = 0; i < users.size(); i++) {
+		if ((users[i].sock) == socket) {
+			return true;
+		}
+	}
+	return false;
+}
 
 int ServerSendMessage(char* sendbuffer, SOCKET Socket, bool isEcho = false) {
 	//Communication
@@ -174,17 +183,25 @@ int registerCommand(char* msg, SOCKET s) {
 		return 0;
 	}
 	else {
-		user newUser;
-		std::string tempString(msg);
-		newUser.name = tempString.substr(10, tempString.length() - 9);
-		newUser.sock = s;
-		users.push_back(newUser);
-		printf("added a new user: ");
-		printf(newUser.name.c_str());
-		printf("\n");
+		if (socketExists(s)) {
+			printf("Existing user tried registering\n");
+			ServerSendMessage((char*)SV_ALREADYREGISTERED, s);
+			return 1;
+		}
+		else
+		{
+			user newUser;
+			std::string tempString(msg);
+			newUser.name = tempString.substr(10, tempString.length() - 9);
+			newUser.sock = s;
+			users.push_back(newUser);
+			printf("added a new user: ");
+			printf(newUser.name.c_str());
+			printf("\n");
 
-		ServerSendMessage((char *)SV_SUCCESS, s);
-		return 1;
+			ServerSendMessage((char *)SV_SUCCESS, s);
+			return 1;
+		}
 	}
 
 }
@@ -297,6 +314,13 @@ int ServerRecieveMessage(SOCKET Socket) {
 					currIndex = i;
 				break;
 			}
+			printf("User ");
+			printf(users[currIndex].name.c_str());
+			printf(" disconnected [It was nice while it lasted :( ]\n");
+
+			Server_log("Server disconnected ");
+			Server_log(users[currIndex].name.c_str());
+			Server_log(" with GRACE\n");
 			users.erase(users.begin() + currIndex);
 
 			return 0;
