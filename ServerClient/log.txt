@@ -3,17 +3,15 @@ UNREGISTERED CLIENT: Test Message
 Server -> UNREGISTERED CLIENT: ECHO
 UNREGISTERED CLIENT: $register sai
 Server -> sai: 1
+sai: shekhar
+Server -> sai: ECHO
 sai: $getlist
-Server -> sai: -------printing online members-------
-sai
--------------------------------
-
 Connected to a new client
 UNREGISTERED CLIENT: Test Message
 Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $register shekhar
-Server -> shekhar: 1
-shekhar: $getlog
-shekhar: $exit
-Server disconnected shekhar with GRACE
-Server -> UNREGISTERED CLIENT: 2
+UNREGISTERED CLIENT: $register gabe
+Server -> gabe: 1
+gabe: $getlist
+Server disconnected gabe with GRACE
+sai: $getlist
+Server disconnected sai with GRACE

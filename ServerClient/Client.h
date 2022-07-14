@@ -203,7 +203,7 @@ void ClientSetup()
 		if (isCommand) {
 			std::string COMMAND_RESULT;
 			sendMessageFromClient(&s[0]);
-			if (s.find("getlog") != std::string::npos) {
+			if (s.find("getlog") != std::string::npos || s.find("getlist") != std::string::npos) {
 				if (ClientRecieveBigMessage(COMMAND_RESULT) == 1) {
 					printf(COMMAND_RESULT.c_str());
 					printf("\n");

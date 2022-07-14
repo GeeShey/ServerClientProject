@@ -141,7 +141,7 @@ int getListCommand(char* msg, SOCKET s) {
 	} //todo come back here
 	message.append( "-------------------------------\n");
 
-	ServerSendMessage(&message[0], s);
+	ServerSendBigMessage(message, s);
 	return 1;
 }
 
@@ -233,10 +233,12 @@ int executeCommand(char* msg,SOCKET s) {
 		registerCommand(msg, s);
 	else if (message.find("getlist") != std::string::npos)
 		getListCommand(msg, s);
-	else if(message.find("exit") != std::string::npos)
+	else if (message.find("exit") != std::string::npos)
 		exitCommand(msg, s);
 	else if (message.find("getlog") != std::string::npos)
 		getLogCommand(msg, s);
+	else
+		printf("UNREGISTERED COMMAND");
 
 	return 1;
 }
