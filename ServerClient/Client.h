@@ -52,15 +52,13 @@ int ClientRecieveMessage(std::string& out, bool displayDataToUser = false) {
 
 int ClientRecieveBigMessage(std::string& out, bool displayDataToUser = false) {
 	//Communication
-	uint8_t size = 0;
-	uint8_t iters = 0;
 
 	std::string length;
 	recv(Client_ComSocket, &length[0], 255, 0);
 	printf("recieved length ");
 	printf(length.c_str());
 	printf("\n");
-	int length_int = stoi(length);
+	int length_int = stoi(length);//CONVERTS STRING TO INT
 
 	char* buffer = new char[length_int];
 

@@ -61,11 +61,14 @@ std::string getUsernameFromSocket(SOCKET socket) {
 int ServerSendBigMessage(std::string msg, SOCKET Socket, bool isEcho = false) {
 
 	msg.append("\0");
+
 	std::string length = std::to_string(msg.length());
+
 	send(Socket, &length[0], length.size(), 0);//sending the size of the buffer
-	printf("sent length ");
-	printf(length.c_str());
-	printf("\n");
+
+	printf("sent length ");		//DEBUG STUFF
+	printf(length.c_str());		//DEBUG STUFF
+	printf("\n");				//DEBUG STUFF
 
 	for (int i = 0; i < msg.size(); i++) {
 		send(Socket, &msg[i], 1, 0);//sending the size of the buffer
