@@ -3,9 +3,10 @@
 auto client_ip = INADDR_ANY;
 int client_port = 31337;
 bool CONNECTION_SUCCESFUL = false;
-SOCKET Client_ComSocket;
+SOCKET Client_ComSocket,client_udp;
 std::string CLIENT_LOG_FILENAME = "client_log.txt";
 std::ofstream cofs;
+
 
 using namespace common;
 int ClientRecieveMessage(std::string& out, bool displayDataToUser = true) {
@@ -128,20 +129,95 @@ void Client_log(std::string s) {
 	cofs.close();
 }
 
+void UDP_client_init() {
+	int val = 1;
+
+	client_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	int result = setsockopt(client_udp, SOL_SOCKET, SO_REUSEADDR, (char*)&val, sizeof(val));
+	if (result < 0)
+	{
+		int err = WSAGetLastError();
+		printf("Error: ");
+		printf(std::to_string(err).c_str());
+		printf("\n");
+
+		return;
+	}
+	else
+	{
+		//printf("DEBUG// I used the Connect function\n");
+	}
+
+	sockaddr_in bcAddr;
+	bcAddr.sin_family = AF_INET;
+	bcAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	bcAddr.sin_port = htons(9009);
+
+	result = bind(client_udp, (sockaddr *) &bcAddr, sizeof(sockaddr_in));
+	if (result <0)
+	{
+		int err = WSAGetLastError();
+		printf("Error: ");
+		printf(std::to_string(err).c_str());
+		printf("\n");
+
+		return;
+	}
+	else
+	{
+		//printf("DEBUG// I used the Connect function\n");
+	}
+
+}
+
+void client_recv_UDP(char* buffer, int length) {
+	sockaddr_in bcAddr;
+	int len = sizeof(bcAddr);
+
+	int result = recvfrom(client_udp, buffer, length, 0, (sockaddr*)&bcAddr,&len);
+	if (result <0)
+	{
+		int err = WSAGetLastError();
+		printf("Error: ");
+		printf(std::to_string(err).c_str());
+		printf("\n");
+
+		return;
+	}
+	else
+	{
+		//printf("DEBUG// I used the Connect function\n");
+	}
+
+}
+
 void ClientSetup()
 {
 
-
-	std::string choice;
-	printf("Enter IP address\n");
-	std::cin >> choice;
-
-	client_ip = inet_addr(choice.c_str());
-	printf("Enter port\n");
-	std::cin >> client_port;
+	char* msgIN = new char[15];
 
 	WSADATA wsadata;
 	WSAStartup(WINSOCK_VERSION, &wsadata);
+
+	UDP_client_init();
+
+	client_recv_UDP(msgIN, 15);
+
+	std::string choice;
+	printf("Enter IP address\n");
+	//std::cin >> choice;
+
+	printf("Enter port\n");
+//	std::cin >> client_port;
+
+
+	std::string msg(msgIN);
+
+	choice = msg.substr(0, msg.find_first_of(':'));
+	client_ip = inet_addr(choice.c_str());
+	client_port = std::stoi(msg.substr(msg.find_first_of(':') + 1, msg.length()-1));
+	printf("Recieved UDP BRoadcast Succesfully\n");
+
 	//Socket
 	Client_ComSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (Client_ComSocket == INVALID_SOCKET)
@@ -153,6 +229,8 @@ void ClientSetup()
 	{
 		//printf("DEBUG// I used the socket function\n");
 	}
+
+
 
 	//Connect
 	sockaddr_in serverAddr;

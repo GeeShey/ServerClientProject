@@ -12,6 +12,7 @@ SOCKET listenSocket;
 int readyFD = 0;
 std::string LOG_FILENAME = "log.txt";
 std::ofstream ofs;
+SOCKET server_udp;
 
 char invalid[] = "0";//SV_FAIl
 
@@ -406,6 +407,54 @@ int ServerRecieveMessage(SOCKET Socket) {
 	delete[] buffer;
 }
 
+void UDP_server_init() {
+	int val = 1;
+
+	server_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	int result = setsockopt(server_udp, SOL_SOCKET, SO_BROADCAST, (char*)&val, sizeof(val));
+	if (result == SOCKET_ERROR)
+	{
+		int err = WSAGetLastError();
+		printf("Error: ");
+		printf(std::to_string(err).c_str());
+		printf("\n");
+
+		return;
+	}
+	else
+	{
+		//printf("DEBUG// I used the Connect function\n");
+	}
+
+	FD_SET(server_udp, &master);
+
+}
+
+void server_SendUDP(char* buffer, int length) {
+	sockaddr_in bcAddr;
+	bcAddr.sin_family = AF_INET;
+	bcAddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+	bcAddr.sin_port = htons(9009);
+
+	int result = sendto(server_udp, buffer, length, 0,(sockaddr *) &bcAddr, sizeof(bcAddr));
+	if (result == SOCKET_ERROR)
+	{
+		int err = WSAGetLastError();
+		printf("Error: ");
+		printf(std::to_string(err).c_str());
+		printf("\n");
+
+		return;
+	}
+	else
+	{
+		//printf("DEBUG// I used the Connect function\n");
+	}
+
+}
+
+
+
 
 
 int Update() {
@@ -415,7 +464,9 @@ int Update() {
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
 	readyFD = select(NULL, &readySet, NULL, NULL, &timeout);
-
+	char msg[] = "127.0.0.1:9009";
+	server_SendUDP(msg,15);
+	//printf("sent udp message\n");
 
 	for (int i = 0; i < readyFD; i++) {
 		if (readySet.fd_array[i] == listenSocket) {
@@ -464,9 +515,8 @@ int ServerSetup()
 	//std::cin >> choice;
 	//
 	//server_ip = inet_addr(choice.c_str());
-	printf("Enter port\n");
-	std::cin >> server_port;
-
+	//std::cin >> server_port;
+	server_port = 9009;
 
 	WSADATA wsadata;
 	WSAStartup(WINSOCK_VERSION, &wsadata);
@@ -481,6 +531,8 @@ int ServerSetup()
 		//printf("DEBUG// I used the socket function\n");
 	}
 
+	UDP_server_init();
+	printf("Initialised Broadcasr Sockets on port: 9009\n");
 	//Bind
 	sockaddr_in serverAddr;
 	serverAddr.sin_family = AF_INET;

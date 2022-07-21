@@ -1,7 +1,0 @@
-Connected to a new client
-UNREGISTERED CLIENT: Test Message
-Server -> UNREGISTERED CLIENT: ECHO
-UNREGISTERED CLIENT: $register keniDaGoat
-Server -> keniDaGoat: 1
-keniDaGoat: asfad
-Server -> keniDaGoat: ECHO
