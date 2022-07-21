@@ -1,0 +1,20 @@
+Connected to a new client
+UNREGISTERED CLIENT: Test Message
+Server -> UNREGISTERED CLIENT: ECHO
+UNREGISTERED CLIENT: $register sai
+Server -> sai: 1
+Connected to a new client
+UNREGISTERED CLIENT: Test Message
+Server -> UNREGISTERED CLIENT: ECHO
+UNREGISTERED CLIENT: $register kevin
+Server -> kevin: 1
+Connected to a new client
+UNREGISTERED CLIENT: Test Message
+Server -> UNREGISTERED CLIENT: ECHO
+UNREGISTERED CLIENT: $register gabe
+Server -> gabe: 1
+Connected to a new client
+UNREGISTERED CLIENT: Test Message
+Server -> UNREGISTERED CLIENT: ECHO
+UNREGISTERED CLIENT: $register tanner
+Server -> UNREGISTERED CLIENT: 0

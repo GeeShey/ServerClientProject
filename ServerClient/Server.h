@@ -7,7 +7,7 @@ int server_port = 31337;
 
 fd_set master,readySet;
 bool serverActive = true;
-int CHAT_CAPACITY = 2;
+int CHAT_CAPACITY = 3;
 SOCKET listenSocket;
 int readyFD = 0;
 std::string LOG_FILENAME = "log.txt";

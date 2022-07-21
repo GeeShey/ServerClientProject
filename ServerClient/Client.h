@@ -289,7 +289,7 @@ void ClientSetup()
 				printf("----------------WELCOME TO THE CHATROOM----------------\n");
 				CONNECTION_SUCCESFUL = true;
 			}
-			else if (USER_REGISTRATION_RESULT._Equal(SV_FULL)) {
+			else{
 				printf("user registration unsuccessfull, chat-room is full\n");
 				CONNECTION_SUCCESFUL = false;
 
