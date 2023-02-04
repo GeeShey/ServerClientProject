@@ -171,14 +171,14 @@ int getLogCommand(char* msg, SOCKET s) {
 }
 int registerCommand(char* msg, SOCKET s) {
 
-	printf("processing the following register command...\n");
+	//printf("processing the following register command...\n");
 	printf(msg);
 	printf("\n");
 	if (users.size() >= CHAT_CAPACITY) {
 		printf("CHATROOM IS FULL, CANNOT ADD MORE USERS\n");
 		//SV_FULL
 		ServerSendMessage(invalid, s);
-		//closesocket(s);
+		closesocket(s);
 		FD_CLR(s, &master);
 		return 0;
 	}
@@ -466,7 +466,12 @@ int Update() {
 	readyFD = select(NULL, &readySet, NULL, NULL, &timeout);
 	char msg[] = "127.0.0.1:9009";
 	server_SendUDP(msg,15);
-	//printf("sent udp message\n");
+	printf("sent udp message: ");
+
+	std::string msgOUT(msg);
+	printf(msgOUT.c_str());
+	printf("\n");
+
 
 	for (int i = 0; i < readyFD; i++) {
 		if (readySet.fd_array[i] == listenSocket) {
@@ -532,7 +537,7 @@ int ServerSetup()
 	}
 
 	UDP_server_init();
-	printf("Initialised Broadcasr Sockets on port: 9009\n");
+	printf("Initialised Broadcast Sockets on port: 9009\n");
 	//Bind
 	sockaddr_in serverAddr;
 	serverAddr.sin_family = AF_INET;

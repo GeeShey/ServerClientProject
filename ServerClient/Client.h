@@ -204,10 +204,10 @@ void ClientSetup()
 	client_recv_UDP(msgIN, 15);
 
 	std::string choice;
-	printf("Enter IP address\n");
+	//printf("Enter IP address\n");
 	//std::cin >> choice;
 
-	printf("Enter port\n");
+	//printf("Enter port\n");
 //	std::cin >> client_port;
 
 
@@ -216,7 +216,11 @@ void ClientSetup()
 	choice = msg.substr(0, msg.find_first_of(':'));
 	client_ip = inet_addr(choice.c_str());
 	client_port = std::stoi(msg.substr(msg.find_first_of(':') + 1, msg.length()-1));
-	printf("Recieved UDP BRoadcast Succesfully\n");
+	printf("Recieved UDP Broadcast Succesfully\n");
+	printf(msg.c_str());
+	printf("\n");
+
+
 
 	//Socket
 	Client_ComSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -251,7 +255,7 @@ void ClientSetup()
 	}
 
 	//Communication
-	char test[]  = "Test Message\0";
+	/*char test[]  = "Test Message\0";
 	sendMessageFromClient(test);
 	std::cout << "[Sent a test message]\n";
 	std::string TestRecieve;
@@ -260,9 +264,9 @@ void ClientSetup()
 	if (TestRecieve._Equal("Test Message"))
 		printf("Server echo successful\n");
 	else
-		printf("There is a transmisiion error(echo from the server was incorrect\n");
+		printf("There is a transmisiion error(echo from the server was incorrect\n");*/
 	std::string username;
-	printf("Enter username(Usernames cannot be separated by spaces) or type $exit to exit\n");
+	printf("Enter username for registration(Usernames cannot be separated by spaces) or type $exit to exit\n");
 	std::cin >> username;
 	std::string COMMAND_RESULT;
 
